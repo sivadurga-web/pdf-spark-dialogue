@@ -18,69 +18,56 @@ const Chat: React.FC = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
-  const handleSendMessage = (content: string) => {
-    if (content.trim()) {
-      const newMessage: Message = {
-        id: Date.now().toString(),
-        content,
-        isUserMessage: true,
-        timestamp: new Date().toLocaleTimeString(),
-      };
-
-      setMessages((prev) => [...prev, newMessage]);
-      processUserMessage(content);
-    }
-  };
-
-  const processUserMessage = (content: string) => {
-    // Simulate AI response after a short delay
-    setTimeout(() => {
-      const responseMessage: Message = {
-        id: (Date.now() + 1).toString(),
-        content: `I received your question: "${content}". Let me analyze that for you.`,
-        isUserMessage: false,
-        timestamp: new Date().toLocaleTimeString(),
-      };
-      setMessages((prev) => [...prev, responseMessage]);
-    }, 1000);
-  };
-
-  const handleFileUpload = (file: File) => {
-    // Create message for file upload
-    const fileMessage: Message = {
+  const handleSendMessage = (content: string, file?: File) => {
+    if (!content && !file) return;
+    
+    // Create a single message with both text and file
+    const newMessage: Message = {
       id: Date.now().toString(),
-      content: `Uploaded invoice for processing`,
+      content: content || "Uploaded invoice for processing",
       isUserMessage: true,
       timestamp: new Date().toLocaleTimeString(),
-      file: {
+      file: file ? {
         name: file.name,
         type: file.type,
         size: file.size,
-      },
+      } : undefined,
     };
 
-    setMessages((prev) => [...prev, fileMessage]);
-    toast({
-      title: "Invoice uploaded",
-      description: `${file.name} has been uploaded for processing.`,
-    });
-
-    // Simulate processing response
+    setMessages((prev) => [...prev, newMessage]);
+    
+    if (file) {
+      toast({
+        title: "Invoice uploaded",
+        description: `${file.name} has been uploaded for processing.`,
+      });
+    }
+    
+    // Generate AI response
     setTimeout(() => {
-      const processingMessage: Message = {
-        id: (Date.now() + 1).toString(),
-        content: `I'm analyzing the invoice "${file.name}". Here's what I found:
+      let responseContent = '';
+      
+      if (file) {
+        responseContent = `I'm analyzing the invoice "${file.name}". Here's what I found:
         
 Invoice #: INV-2023-001
 Date: May 5, 2025
 Amount: $1,250.00
 Vendor: ABC Company
         
-Would you like me to extract more details or explain any part of this invoice?`,
+Would you like me to extract more details or explain any part of this invoice?`;
+      } else {
+        responseContent = `I received your question: "${content}". Let me analyze that for you.`;
+      }
+      
+      const responseMessage: Message = {
+        id: (Date.now() + 1).toString(),
+        content: responseContent,
         isUserMessage: false,
         timestamp: new Date().toLocaleTimeString(),
       };
-      setMessages((prev) => [...prev, processingMessage]);
+      
+      setMessages((prev) => [...prev, responseMessage]);
     }, 1500);
   };
 
@@ -104,10 +91,7 @@ Would you like me to extract more details or explain any part of this invoice?`,
         )}
         <div ref={messagesEndRef} />
       </div>
-      <ChatInput 
-        onSendMessage={handleSendMessage} 
-        onFileUpload={handleFileUpload} 
-      />
+      <ChatInput onSendMessage={handleSendMessage} />
     </div>
   );
 };

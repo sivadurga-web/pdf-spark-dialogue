@@ -6,11 +6,10 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 
 type ChatInputProps = {
-  onSendMessage: (message: string) => void;
-  onFileUpload: (file: File) => void;
+  onSendMessage: (message: string, file?: File) => void;
 };
 
-const ChatInput: React.FC<ChatInputProps> = ({ onSendMessage, onFileUpload }) => {
+const ChatInput: React.FC<ChatInputProps> = ({ onSendMessage }) => {
   const [message, setMessage] = useState('');
   const [showUpload, setShowUpload] = useState(false);
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
@@ -19,11 +18,9 @@ const ChatInput: React.FC<ChatInputProps> = ({ onSendMessage, onFileUpload }) =>
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (message.trim() || uploadedFile) {
-      onSendMessage(message.trim());
-      if (uploadedFile) {
-        onFileUpload(uploadedFile);
-        setUploadedFile(null);
-      }
+      // Send both message and file together as a single message
+      onSendMessage(message.trim(), uploadedFile || undefined);
+      setUploadedFile(null);
       setMessage('');
       if (textareaRef.current) {
         textareaRef.current.style.height = 'auto';
@@ -67,7 +64,9 @@ const ChatInput: React.FC<ChatInputProps> = ({ onSendMessage, onFileUpload }) =>
       
       {uploadedFile && (
         <div className="mb-4 flex items-center gap-2 p-2 bg-muted rounded">
-          <X className="h-5 w-5 text-primary" />
+          <div className="bg-rose-500/90 text-white p-2 rounded">
+            <X className="h-5 w-5" />
+          </div>
           <div className="overflow-hidden flex-1">
             <p className="text-sm font-medium truncate">{uploadedFile.name}</p>
             <p className="text-xs text-muted-foreground">
