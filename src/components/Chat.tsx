@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import ChatMessage from './ChatMessage';
 import ChatInput from './ChatInput';
@@ -18,10 +17,38 @@ const Chat: React.FC = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
-  const handleSendMessage = (content: string, file?: File) => {
+  const handleSendMessage = async (content: string, file?: File) => {
+    console.log("Preparing to send message...");
     if (!content && !file) return;
-    
-    // Create a single message with both text and file
+
+    console.log("Sending message:", content, file ? `with file: ${file.name}` : "without file");
+
+    const formData = new FormData();
+    formData.append("text", content);
+    if (file) {
+      formData.append("file", file); // Ensure the key matches the backend parameter name
+      console.log("File appended to FormData:", file.name);
+    }
+
+    try {
+      console.log("Calling API with FormData...");
+      const response = await fetch("http://localhost:8000/api/process_invoice", {
+        method: "POST",
+        body: formData,
+      });
+
+      console.log("API response status:", response.status);
+      if (!response.ok) {
+        throw new Error("Failed to fetch response from API");
+      }
+
+      const data = await response.json();
+      console.log("Received response from API:", data);
+    } catch (error) {
+      console.error("Error sending to API:", error);
+    }
+
+    // Add user message
     const newMessage: Message = {
       id: Date.now().toString(),
       content: content || "Uploaded invoice for processing",
@@ -35,40 +62,46 @@ const Chat: React.FC = () => {
     };
 
     setMessages((prev) => [...prev, newMessage]);
-    
+
     if (file) {
       toast({
         title: "Invoice uploaded",
         description: `${file.name} has been uploaded for processing.`,
       });
     }
-    
-    // Generate AI response
-    setTimeout(() => {
-      let responseContent = '';
-      
+
+    // Call API and handle response
+    try {
+      const formData = new FormData();
+      formData.append("text", content);
       if (file) {
-        responseContent = `I'm analyzing the invoice "${file.name}". Here's what I found:
-        
-Invoice #: INV-2023-001
-Date: May 5, 2025
-Amount: $1,250.00
-Vendor: ABC Company
-        
-Would you like me to extract more details or explain any part of this invoice?`;
-      } else {
-        responseContent = `I received your question: "${content}". Let me analyze that for you.`;
+        formData.append("document", file);
       }
-      
+
+      console.log("Calling API with formData...");
+      const response = await fetch("http://localhost:8000/api/process_invoice", {
+        method: "POST",
+        body: formData,
+      });
+      console.log("API response status:", response.status, response.body);
+      if (!response.ok) {
+        throw new Error("Failed to fetch response from API");
+      }
+
+      const data = await response.json();
+      console.log("Received response from API:", data);
+
       const responseMessage: Message = {
         id: (Date.now() + 1).toString(),
-        content: responseContent,
+        content: data.message || "Received response from API",
         isUserMessage: false,
         timestamp: new Date().toLocaleTimeString(),
       };
-      
+
       setMessages((prev) => [...prev, responseMessage]);
-    }, 1500);
+    } catch (error) {
+      console.error("Error sending to API:", error);
+    }
   };
 
   return (
