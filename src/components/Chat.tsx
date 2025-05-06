@@ -9,7 +9,7 @@ const Chat: React.FC = () => {
   const [messages, setMessages] = useState<Message[]>([
     {
       id: '1',
-      content: 'Hello! Upload an invoice PDF or ask me a question.',
+      content: 'Hello! Upload an invoice PDF or ask me a question about invoices.',
       isUserMessage: false,
       timestamp: new Date().toLocaleTimeString(),
     },
@@ -34,12 +34,15 @@ const Chat: React.FC = () => {
     };
 
     setMessages((prev) => [...prev, newMessage]);
+    processUserMessage(content);
+  };
 
+  const processUserMessage = (content: string) => {
     // Simulate AI response after a short delay
     setTimeout(() => {
       const responseMessage: Message = {
         id: (Date.now() + 1).toString(),
-        content: `I received your message: "${content}". This is a simulated response.`,
+        content: `I received your question: "${content}". Let me analyze that for you.`,
         isUserMessage: false,
         timestamp: new Date().toLocaleTimeString(),
       };
@@ -51,7 +54,7 @@ const Chat: React.FC = () => {
     // Create message for file upload
     const fileMessage: Message = {
       id: Date.now().toString(),
-      content: `Uploaded invoice: ${file.name}`,
+      content: `Uploaded invoice for processing`,
       isUserMessage: true,
       timestamp: new Date().toLocaleTimeString(),
       file: {
@@ -63,15 +66,22 @@ const Chat: React.FC = () => {
 
     setMessages((prev) => [...prev, fileMessage]);
     toast({
-      title: "File uploaded",
-      description: `${file.name} has been uploaded.`,
+      title: "Invoice uploaded",
+      description: `${file.name} has been uploaded for processing.`,
     });
 
     // Simulate processing response
     setTimeout(() => {
       const processingMessage: Message = {
         id: (Date.now() + 1).toString(),
-        content: `I'm processing the invoice ${file.name}. This is a simulated response.`,
+        content: `I'm analyzing the invoice "${file.name}". Here's what I found:
+        
+Invoice #: INV-2023-001
+Date: May 5, 2025
+Amount: $1,250.00
+Vendor: ABC Company
+        
+Would you like me to extract more details or explain any part of this invoice?`,
         isUserMessage: false,
         timestamp: new Date().toLocaleTimeString(),
       };
@@ -88,6 +98,7 @@ const Chat: React.FC = () => {
             message={message.content}
             isUserMessage={message.isUserMessage}
             timestamp={message.timestamp}
+            file={message.file}
           />
         ))}
         <div ref={messagesEndRef} />

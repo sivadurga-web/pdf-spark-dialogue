@@ -6,7 +6,8 @@ const Index = () => {
   return (
     <div className="flex flex-col h-screen bg-background">
       <header className="border-b px-6 py-4">
-        <h1 className="text-2xl font-bold text-primary">Invoice Chat Assistant</h1>
+        <h1 className="text-2xl font-bold text-primary">Invoice Processing Assistant</h1>
+        <p className="text-sm text-muted-foreground">Upload invoices or ask questions about your financial documents</p>
       </header>
       
       <main className="flex-1 overflow-hidden">
