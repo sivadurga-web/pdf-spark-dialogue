@@ -1,6 +1,6 @@
 
 import React, { useState, useRef } from 'react';
-import { Send, X, Search, FileText, MessageSquarePlus } from 'lucide-react';
+import { Send, X, MessageSquarePlus } from 'lucide-react';
 import FileUpload from './FileUpload';
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
@@ -67,7 +67,7 @@ const ChatInput: React.FC<ChatInputProps> = ({ onSendMessage, onFileUpload }) =>
       
       {uploadedFile && (
         <div className="mb-4 flex items-center gap-2 p-2 bg-muted rounded">
-          <FileText className="h-5 w-5 text-primary" />
+          <X className="h-5 w-5 text-primary" />
           <div className="overflow-hidden flex-1">
             <p className="text-sm font-medium truncate">{uploadedFile.name}</p>
             <p className="text-xs text-muted-foreground">
@@ -92,7 +92,7 @@ const ChatInput: React.FC<ChatInputProps> = ({ onSendMessage, onFileUpload }) =>
           onChange={handleTextareaInput}
           onKeyDown={handleKeyDown}
           placeholder="What can I help with?"
-          className="min-h-[60px] pr-20 resize-none py-5 pl-14 rounded-xl bg-muted"
+          className="min-h-[60px] pr-16 resize-none py-5 pl-14 rounded-xl bg-muted"
           rows={1}
         />
         
@@ -109,31 +109,14 @@ const ChatInput: React.FC<ChatInputProps> = ({ onSendMessage, onFileUpload }) =>
         </div>
         
         <div className="absolute right-3 bottom-3 flex space-x-2">
-          {message.trim() && (
-            <Button
-              type="submit"
-              className="rounded-full h-9 w-9 p-0 flex items-center justify-center"
-            >
-              <Send className="h-4 w-4" />
-            </Button>
-          )}
+          <Button
+            type="submit"
+            className="rounded-full h-9 w-9 p-0 flex items-center justify-center bg-primary/90 text-white hover:bg-primary"
+          >
+            <Send className="h-4 w-4" />
+          </Button>
         </div>
       </form>
-      
-      <div className="flex items-center justify-center gap-2 mt-4">
-        <Button variant="outline" size="sm" className="rounded-full px-4 flex gap-2">
-          <Search className="h-4 w-4" />
-          Search
-        </Button>
-        <Button variant="outline" size="sm" className="rounded-full px-4 flex gap-2">
-          <FileText className="h-4 w-4" />
-          Reason
-        </Button>
-        <Button variant="outline" size="sm" className="rounded-full px-4 flex gap-2">
-          <Search className="h-4 w-4" />
-          Deep research
-        </Button>
-      </div>
     </div>
   );
 };
