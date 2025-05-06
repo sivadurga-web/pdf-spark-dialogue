@@ -6,14 +6,7 @@ import { Message } from '@/types/message';
 import { useToast } from '@/components/ui/use-toast';
 
 const Chat: React.FC = () => {
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      id: '1',
-      content: 'Hello! Upload an invoice PDF or ask me a question about invoices.',
-      isUserMessage: false,
-      timestamp: new Date().toLocaleTimeString(),
-    },
-  ]);
+  const [messages, setMessages] = useState<Message[]>([]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
 
@@ -26,15 +19,17 @@ const Chat: React.FC = () => {
   };
 
   const handleSendMessage = (content: string) => {
-    const newMessage: Message = {
-      id: Date.now().toString(),
-      content,
-      isUserMessage: true,
-      timestamp: new Date().toLocaleTimeString(),
-    };
+    if (content.trim()) {
+      const newMessage: Message = {
+        id: Date.now().toString(),
+        content,
+        isUserMessage: true,
+        timestamp: new Date().toLocaleTimeString(),
+      };
 
-    setMessages((prev) => [...prev, newMessage]);
-    processUserMessage(content);
+      setMessages((prev) => [...prev, newMessage]);
+      processUserMessage(content);
+    }
   };
 
   const processUserMessage = (content: string) => {
@@ -92,15 +87,21 @@ Would you like me to extract more details or explain any part of this invoice?`,
   return (
     <div className="flex flex-col h-full">
       <div className="flex-1 overflow-y-auto p-4 space-y-4 scrollbar-w-2 scrollbar-thumb-blue scrollbar-track-blue-lighter scrollbar-thumb-rounded">
-        {messages.map((message) => (
-          <ChatMessage
-            key={message.id}
-            message={message.content}
-            isUserMessage={message.isUserMessage}
-            timestamp={message.timestamp}
-            file={message.file}
-          />
-        ))}
+        {messages.length === 0 ? (
+          <div className="h-full flex items-center justify-center">
+            <h2 className="text-3xl font-semibold text-white/70">What can I help with?</h2>
+          </div>
+        ) : (
+          messages.map((message) => (
+            <ChatMessage
+              key={message.id}
+              message={message.content}
+              isUserMessage={message.isUserMessage}
+              timestamp={message.timestamp}
+              file={message.file}
+            />
+          ))
+        )}
         <div ref={messagesEndRef} />
       </div>
       <ChatInput 

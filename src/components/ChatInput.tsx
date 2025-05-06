@@ -1,7 +1,9 @@
 
-import React, { useState } from 'react';
-import { Send } from 'lucide-react';
+import React, { useState, useRef } from 'react';
+import { Send, X, Search, FileText, MessageSquarePlus } from 'lucide-react';
 import FileUpload from './FileUpload';
+import { Textarea } from "@/components/ui/textarea";
+import { Button } from "@/components/ui/button";
 
 type ChatInputProps = {
   onSendMessage: (message: string) => void;
@@ -11,18 +13,48 @@ type ChatInputProps = {
 const ChatInput: React.FC<ChatInputProps> = ({ onSendMessage, onFileUpload }) => {
   const [message, setMessage] = useState('');
   const [showUpload, setShowUpload] = useState(false);
+  const [uploadedFile, setUploadedFile] = useState<File | null>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (message.trim()) {
+    if (message.trim() || uploadedFile) {
       onSendMessage(message.trim());
+      if (uploadedFile) {
+        onFileUpload(uploadedFile);
+        setUploadedFile(null);
+      }
       setMessage('');
+      if (textareaRef.current) {
+        textareaRef.current.style.height = 'auto';
+      }
     }
   };
 
   const handleFileSelect = (file: File) => {
-    onFileUpload(file);
+    setUploadedFile(file);
     setShowUpload(false);
+  };
+
+  const handleTextareaInput = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setMessage(e.target.value);
+    
+    // Auto-resize textarea
+    if (textareaRef.current) {
+      textareaRef.current.style.height = 'auto';
+      textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleSubmit(e);
+    }
+  };
+
+  const removeFile = () => {
+    setUploadedFile(null);
   };
 
   return (
@@ -32,44 +64,76 @@ const ChatInput: React.FC<ChatInputProps> = ({ onSendMessage, onFileUpload }) =>
           <FileUpload onFileSelect={handleFileSelect} />
         </div>
       )}
-      <form onSubmit={handleSubmit} className="flex items-center gap-2">
-        <button
-          type="button"
-          onClick={() => setShowUpload(!showUpload)}
-          className="p-2 rounded-full hover:bg-muted transition-colors"
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="20"
-            height="20"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            className="text-gray-500"
+      
+      {uploadedFile && (
+        <div className="mb-4 flex items-center gap-2 p-2 bg-muted rounded">
+          <FileText className="h-5 w-5 text-primary" />
+          <div className="overflow-hidden flex-1">
+            <p className="text-sm font-medium truncate">{uploadedFile.name}</p>
+            <p className="text-xs text-muted-foreground">
+              {uploadedFile.type} • {(uploadedFile.size / 1024).toFixed(1)} KB
+            </p>
+          </div>
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            onClick={removeFile}
+            className="h-8 w-8 rounded-full"
           >
-            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-            <polyline points="17 8 12 3 7 8"></polyline>
-            <line x1="12" y1="3" x2="12" y2="15"></line>
-          </svg>
-        </button>
-        <input
-          type="text"
+            <X className="h-4 w-4" />
+          </Button>
+        </div>
+      )}
+      
+      <form onSubmit={handleSubmit} className="relative">
+        <Textarea
+          ref={textareaRef}
           value={message}
-          onChange={(e) => setMessage(e.target.value)}
-          placeholder="Type your message..."
-          className="flex-grow rounded-full border border-input px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+          onChange={handleTextareaInput}
+          onKeyDown={handleKeyDown}
+          placeholder="What can I help with?"
+          className="min-h-[60px] pr-20 resize-none py-5 pl-14 rounded-xl bg-muted"
+          rows={1}
         />
-        <button
-          type="submit"
-          className="p-2 bg-primary text-primary-foreground rounded-full hover:bg-primary/90 transition-colors"
-          disabled={!message.trim()}
-        >
-          <Send className="h-5 w-5" />
-        </button>
+        
+        <div className="absolute left-4 bottom-4 flex items-center">
+          <Button
+            type="button"
+            onClick={() => setShowUpload(!showUpload)}
+            variant="ghost"
+            size="icon"
+            className="rounded-full"
+          >
+            <MessageSquarePlus className="h-5 w-5" />
+          </Button>
+        </div>
+        
+        <div className="absolute right-3 bottom-3 flex space-x-2">
+          {message.trim() && (
+            <Button
+              type="submit"
+              className="rounded-full h-9 w-9 p-0 flex items-center justify-center"
+            >
+              <Send className="h-4 w-4" />
+            </Button>
+          )}
+        </div>
       </form>
+      
+      <div className="flex items-center justify-center gap-2 mt-4">
+        <Button variant="outline" size="sm" className="rounded-full px-4 flex gap-2">
+          <Search className="h-4 w-4" />
+          Search
+        </Button>
+        <Button variant="outline" size="sm" className="rounded-full px-4 flex gap-2">
+          <FileText className="h-4 w-4" />
+          Reason
+        </Button>
+        <Button variant="outline" size="sm" className="rounded-full px-4 flex gap-2">
+          <Search className="h-4 w-4" />
+          Deep research
+        </Button>
+      </div>
     </div>
   );
 };
