@@ -1,4 +1,4 @@
-# Welcome to your Lovable project
+# Welcome to Vendor invoice processor chat ui
 
 **Use your preferred IDE**
 
@@ -45,3 +45,5 @@ This project is built with:
 - React
 - shadcn-ui
 - Tailwind CSS
+
+- used lovable.dev to generate the ui
