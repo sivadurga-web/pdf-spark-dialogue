@@ -21,33 +21,6 @@ const Chat: React.FC = () => {
     console.log("Preparing to send message...");
     if (!content && !file) return;
 
-    console.log("Sending message:", content, file ? `with file: ${file.name}` : "without file");
-
-    const formData = new FormData();
-    formData.append("text", content);
-    if (file) {
-      formData.append("file", file); // Ensure the key matches the backend parameter name
-      console.log("File appended to FormData:", file.name);
-    }
-
-    try {
-      console.log("Calling API with FormData...");
-      const response = await fetch("http://localhost:8000/api/process_invoice", {
-        method: "POST",
-        body: formData,
-      });
-
-      console.log("API response status:", response.status);
-      if (!response.ok) {
-        throw new Error("Failed to fetch response from API");
-      }
-
-      const data = await response.json();
-      console.log("Received response from API:", data);
-    } catch (error) {
-      console.error("Error sending to API:", error);
-    }
-
     // Add user message
     const newMessage: Message = {
       id: Date.now().toString(),
@@ -91,13 +64,14 @@ const Chat: React.FC = () => {
       const data = await response.json();
       console.log("Received response from API:", data);
 
+      // Add API response message
       const responseMessage: Message = {
         id: (Date.now() + 1).toString(),
         content: data.message || "Received response from API",
         isUserMessage: false,
         timestamp: new Date().toLocaleTimeString(),
       };
-
+      
       setMessages((prev) => [...prev, responseMessage]);
     } catch (error) {
       console.error("Error sending to API:", error);
